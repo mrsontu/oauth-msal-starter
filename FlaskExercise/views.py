@@ -21,13 +21,9 @@ def home():
 def login():
     if current_user.is_authenticated:
         return redirect(url_for('home'))
-    print(f"Session state: {session.get('state')}")
-    print(f"Cache: {cache}")
     session['state'] = str(uuid.uuid4())
     # Note: Below will return None as an auth_url until you implement the function
     auth_url = _build_auth_url(scopes=Config.SCOPE, state=session['state'])
-    print(f"auth_url: {auth_url}")
-    
     return render_template('login.html', title='Sign In', auth_url=auth_url)
 
 
@@ -94,11 +90,14 @@ def _build_msal_app(cache=None, authority=None):
 
 
 def _build_auth_url(authority=None, scopes=None, state=None):
-   result = _build_msal_app(cache=cache).acquire_token_by_authorization_code(
-  request.args['code'],
-  scopes=Config.SCOPE,
-  redirect_uri=url_for('authorized', _external=True, _scheme='https'))
-
+    try:
+        result = _build_msal_app(cache=cache).acquire_token_by_authorization_code(
+            request.args['code'],
+            scopes=Config.SCOPE,
+            redirect_uri=url_for('authorized', _external=True, _scheme='https')
+        )
+    except Exception as e:
+        return f"Đã xảy ra lỗi: {str(e)}", 500
 
 # if __name__ == "__main__":
 #     app.run(ssl_context=context, port=5555)
