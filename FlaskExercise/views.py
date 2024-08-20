@@ -21,9 +21,13 @@ def home():
 def login():
     if current_user.is_authenticated:
         return redirect(url_for('home'))
+    print(f"Session state: {session.get('state')}")
+    print(f"Cache: {cache}")
     session['state'] = str(uuid.uuid4())
     # Note: Below will return None as an auth_url until you implement the function
     auth_url = _build_auth_url(scopes=Config.SCOPE, state=session['state'])
+    print(f"auth_url: {auth_url}")
+    
     return render_template('login.html', title='Sign In', auth_url=auth_url)
 
 
